@@ -1,6 +1,4 @@
-import {offers} from './data.js';
-
-const card = document.querySelector('#card').content; //Находим фрагмент с содержимым шаблона
+const card = document.querySelector('#card').content.querySelector('.popup'); //Находим фрагмент с содержимым шаблона
 
 const typeOfHouse = {
   flat: 'Квартира',
@@ -52,6 +50,7 @@ const renderCard = ({ author, offer }) => {
   }
 
   const price = offerCard.querySelector('.popup__text--price');
+
   if(offer.price) {
     price.textContent = `${offer.price} ₽/ночь`;
   } else {
@@ -80,7 +79,7 @@ const renderCard = ({ author, offer }) => {
   }
 
   const features = offerCard.querySelector('.popup__features');
-  if (offer.features.length > 0) {
+  if (offer.features && offer.features.length > 0) {
     renderFeatures(offer.features, features);
   } else {
     features.remove();
@@ -94,7 +93,7 @@ const renderCard = ({ author, offer }) => {
   }
 
   const photos = offerCard.querySelector('.popup__photos');
-  if (offer.photos.length > 0) {
+  if (offer.photos && offer.photos.length > 0) {
     photos.appendChild(renderImage(photos, offer.photos));
   } else {
     photos.remove();

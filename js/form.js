@@ -1,22 +1,27 @@
+import { sendRequest } from './api.js';
 const adForm = document.querySelector('.ad-form');
 const mapFilters = document.querySelector('.map__filters');
 const formElement = document.querySelectorAll('fieldset, .map__filter, .ad-form__slider'); //коллекция всех элементов, которые нужно заблокировать
-
+const MAX_PRICE = 100000;
 //настройка состояния формы
-const setDisabledState = () => {
-  formElement.forEach((item) => (item.disabled = !item.disabled)); //замена текущего статуса на обратный делаем и активацию и деактивацию
+const setFieldsActiveState = () => {
+  formElement.forEach((item) => (item.disabled = false));
+};
+
+const setFieldsDisabledState = () => {
+  formElement.forEach((item) => (item.disabled = true));
 };
 
 const setActiveState = () => {
   adForm.classList.remove('ad-form--disabled');
   mapFilters.classList.remove('map__filters--disabled');
-  setDisabledState();
+  setFieldsActiveState();
 };
 
 const setInactiveState = () => {
   adForm.classList.add('ad-form--disabled');
   mapFilters.classList.add('map__filters--disabled');
-  setDisabledState();
+  setFieldsDisabledState();
 };
 
 // pristine
@@ -57,21 +62,30 @@ const minPriceHouse = {
 
 const price = adForm.querySelector('#price');
 const type = adForm.querySelector('#type');
-const formTime = adForm.querySelector('#ad-form__element--time');
+const formTime = adForm.querySelector('.ad-form__element--time');
+
+const sliderElement = adForm.querySelector('.ad-form__slider');
 
 const onTypeOfHouseChange = () => {
   const minPrice = minPriceHouse[type.value];
   price.placeholder = minPrice;
   price.min = minPrice;
+
+  sliderElement.noUiSlider.updateOptions(
+    {
+      start: minPriceHouse[type.value],
+    });
 };
 
 type.addEventListener('change', onTypeOfHouseChange);
 
-const CheckMinPrice = () => Number(price.value) >= Number(price.placeholder);
-const getPriceErrorMessage = () => `Минимальная цена ${price.placeholder} рублей`;
-pristine.addValidator(price, CheckMinPrice, getPriceErrorMessage);
+const checkMinPrice = () => Number(price.value) >= Number(price.placeholder);
+const checkMaxPrice = () => Number(price.value) <= MAX_PRICE;
+const getMinPriceErrorMessage = () => `Минимальная цена ${price.placeholder} рублей`;
+pristine.addValidator(price, checkMinPrice, getMinPriceErrorMessage);
+pristine.addValidator(price, checkMaxPrice, `Максимальная цена ${MAX_PRICE} рублей`);
 
-formTime.addEventListener ('change', (evt) => {
+formTime.addEventListener('change', (evt) => {
   timeOut.value = evt.target.value;
   timeIn.value = evt.target.value;
 });
@@ -107,12 +121,66 @@ const onRoomNumberChange = () => {
 
 roomNumber.addEventListener('change', onRoomNumberChange);
 
-//отправка формы
+//слайдер
+
+noUiSlider.create(sliderElement, {
+  range: {
+    min: 0,
+    max: 100000,
+  },
+  start: 5000,
+  step: 1,
+  connect: 'lower',
+  format: {
+    to: function(value) {
+      if (Number.isInteger(value)) {
+        return value.toFixed(0);
+      }
+      return value.toFixed(0);
+    },
+    from: function(value) {
+      return parseFloat(value);
+    },
+  },
+});
+
+sliderElement.noUiSlider.on('slide', () => {
+  const value = sliderElement.noUiSlider.get();
+
+  price.value = value;
+});
+
+price.addEventListener('input', () => {
+  sliderElement.noUiSlider.set(price.value);
+});
+
+const onSuccess = () => {
+  const template = document.querySelector('#success').content;
+  const content = template.cloneNode(true);
+
+  document.body.append(content);
+
+  adForm.reset();
+};
+
+const onError = (error = 'Произошла ошибка') => {
+  const template = document.querySelector('#error').content;
+  const content = template.cloneNode(true);
+  const text = content.querySelector('.error__message');
+
+  text.textContent = error;
+
+  document.body.append(content);
+};
+
+// Отправка формы
 adForm.addEventListener('submit', (evt) => {
-  if(!pristine.validate()) {
-    evt.preventDefault();
-  } else {
-    return true;
+  const formData = new FormData(evt.target);
+
+  evt.preventDefault();
+
+  if(pristine.validate()) {
+    sendRequest(onSuccess, onError, 'POST', formData);
   }
 });
 

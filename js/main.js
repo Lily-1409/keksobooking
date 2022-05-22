@@ -1,10 +1,17 @@
-import { offers } from './data.js';
-import { renderCard } from './cards.js';
-import { setActiveState, setInactiveState, validateRooms } from './form.js';
+import { validateRooms } from './form.js';
+import './map.js';
 
-const map = document.querySelector('.map');
-map.appendChild(renderCard(offers[0]));
-
-setInactiveState();
-setActiveState();
 validateRooms();
+
+document.addEventListener('click', (e) => {
+  const target = e.target;
+
+  if (target.classList.contains('error__button') ||
+      target.classList.contains('success__message')) {
+    target.parentElement.remove();
+  }
+
+  if (target.classList.contains('success')) {
+    target.remove();
+  }
+});
