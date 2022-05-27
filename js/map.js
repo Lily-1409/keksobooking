@@ -1,7 +1,7 @@
-
 import { sendRequest } from './api.js';
 import { renderCard } from './cards.js';
 import { setActiveState } from './form.js';
+import { filterData } from './sort-pin.js';
 
 const MAX_PINS = 10;
 
@@ -50,7 +50,11 @@ const adPinIcon = L.icon({
   iconAnhor: [20, 40],
 });
 
-const renderPins = (pins) => {
+const markerGroup = L.layerGroup().addTo(map);
+
+const renderPins = (payload) => {
+  const pins = payload.slice(0, MAX_PINS);
+
   pins.forEach((offer) => {
     const {
       location: {
@@ -68,15 +72,29 @@ const renderPins = (pins) => {
     });
 
     adPin
-      .addTo(map)
+      .addTo(markerGroup)
       .bindPopup(renderCard(offer), {
         keepInView: true
       });
   });
 };
 
+const removeMapPins = () => {
+  markerGroup.clearLayers();
+};
+
+//изменения
+const mapFilters = document.querySelector('.map__filters');
+
+const onMapFiltersChange = (payload) => {
+  removeMapPins();
+  renderPins(filterData(payload));
+};
+
 const onSuccess = (payload) => {
-  renderPins(payload.slice(0, MAX_PINS));
+  renderPins(payload);
+  //изменения
+  mapFilters.addEventListener('change', () => onMapFiltersChange(payload));
 };
 
 const onError = (error = 'Произошла ошибка') => {
