@@ -1,4 +1,6 @@
 import { sendRequest } from './api.js';
+import { resetImage } from './image-preview.js';
+
 const adForm = document.querySelector('.ad-form');
 const mapFilters = document.querySelector('.map__filters');
 const formElement = document.querySelectorAll('fieldset, .map__filter, .ad-form__slider'); //коллекция всех элементов, которые нужно заблокировать
@@ -154,13 +156,21 @@ price.addEventListener('input', () => {
   sliderElement.noUiSlider.set(price.value);
 });
 
+const resetForm = () => {
+  resetImage();
+  adForm.reset();
+};
+
+const clearButton = document.querySelector('.ad-form__reset');
+
+clearButton.addEventListener('click', resetForm);
+
 const onSuccess = () => {
   const template = document.querySelector('#success').content;
   const content = template.cloneNode(true);
 
   document.body.append(content);
-
-  adForm.reset();
+  resetForm();
 };
 
 const onError = (error = 'Произошла ошибка') => {

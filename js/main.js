@@ -1,5 +1,6 @@
 import { validateRooms } from './form.js';
 import './map.js';
+import './image-preview.js';
 
 validateRooms();
 

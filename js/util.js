@@ -1,3 +1,5 @@
+const DEBOUNCE_INTERVAL = 2000;
+
 const getRandomInteger = (min, max) => {
   if (min < 0 || max < 0) {
     return -1;
@@ -35,10 +37,21 @@ const getNumber = (num, targetLength) => num.toString().padStart(targetLength, 0
 
 const getRandomArrayElement = (elements) => elements[getRandomInteger(0, elements.length-1)];
 
+const debounce = (callback, timeoutDelay = DEBOUNCE_INTERVAL) => {
+  let timeoutId;
+
+  return (...rest) => {
+    clearTimeout(timeoutId);
+
+    timeoutId = setTimeout(() => callback.apply(this, rest), timeoutDelay);
+  };
+};
+
 export {
   getRandomInteger,
   getRandomFloat,
   shuffleArray,
   getNumber,
   getRandomArrayElement,
+  debounce,
 };

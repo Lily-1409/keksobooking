@@ -2,6 +2,7 @@ import { sendRequest } from './api.js';
 import { renderCard } from './cards.js';
 import { setActiveState } from './form.js';
 import { filterData } from './sort-pin.js';
+import { debounce } from './util.js';
 
 const MAX_PINS = 10;
 
@@ -83,17 +84,16 @@ const removeMapPins = () => {
   markerGroup.clearLayers();
 };
 
-//изменения
 const mapFilters = document.querySelector('.map__filters');
 
-const onMapFiltersChange = (payload) => {
+const onMapFiltersChange = debounce((payload) => {
   removeMapPins();
   renderPins(filterData(payload));
-};
+});
 
 const onSuccess = (payload) => {
   renderPins(payload);
-  //изменения
+
   mapFilters.addEventListener('change', () => onMapFiltersChange(payload));
 };
 
